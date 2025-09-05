@@ -250,7 +250,7 @@ export default function Analytics() {
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
-                All Users ({allUsers.length})
+                All Users 
               </button>
               <button
                 onClick={() => handleTabChange('daily')}
@@ -260,7 +260,7 @@ export default function Analytics() {
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
-                Daily Active ({dailyActiveUsers.length})
+                Daily Active 
               </button>
               <button
                 onClick={() => handleTabChange('paid')}
@@ -270,7 +270,7 @@ export default function Analytics() {
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
-                Paid Users ({paidUsers.length})
+                Paid Users 
               </button>
             </div>
           </div>
