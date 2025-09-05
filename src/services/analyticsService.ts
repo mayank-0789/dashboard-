@@ -1,4 +1,4 @@
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, doc, getDoc, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 // Types for analytics data
@@ -173,7 +173,7 @@ export class AnalyticsService {
     }
   }
 
-  // Fetch all paid users data from test_users_12m collection
+  // Fetch all paid users data from test_users_12m collection and get details from users collection
   static async getPaidUsers(): Promise<UserData[]> {
     try {
       console.log('Attempting to fetch from test_users_12m collection...');
@@ -190,39 +190,71 @@ export class AnalyticsService {
         snapshot = await getDocs(paidUsersRef);
       }
       
-      const paidUsers: UserData[] = [];
+      const paidUserIds: string[] = [];
       
+      // First, collect all paid user IDs
       snapshot.docs.forEach(doc => {
         const data = doc.data();
         console.log('Paid user document:', doc.id, data);
         
-        // Try different possible email field names
-        const email = data.email || 
-                     data.emailAddress || 
-                     data.userEmail || 
-                     data.Email || 
-                     data.user_email || 
-                     'No email';
-        
-        // Try different possible name field names
-        const name = data.name || 
-                    data.displayName || 
-                    data.userName || 
-                    data.fullName || 
-                    data.Name || 
-                    data.display_name || 
-                    data.user_name || 
-                    data.full_name ||
-                    `User ${doc.id.substring(0, 8)}`;
-        
-        paidUsers.push({
-          id: doc.id,
-          email,
-          name
-        });
+        // Try to get user ID from different possible fields
+        const userId = data.userId || data.uid || data.user_id || data.id || doc.id;
+        paidUserIds.push(userId);
       });
 
-      console.log('Fetched paid users:', paidUsers.length, paidUsers);
+      console.log('Found paid user IDs:', paidUserIds);
+
+      // Now fetch user details from the users collection
+      const paidUsers: UserData[] = [];
+      const usersRef = collection(db, 'users');
+      
+      // Fetch user details for each paid user ID
+      for (const userId of paidUserIds) {
+        try {
+          // Try to find user by document ID first
+          const userDocRef = doc(db, 'users', userId);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            paidUsers.push({
+              id: userDoc.id,
+              email: userData.email || userData.emailAddress || userData.userEmail || 'No email',
+              name: userData.name || userData.displayName || userData.userName || userData.fullName || 'Anonymous User'
+            });
+          } else {
+            // If not found by ID, try to search by email or other fields
+            const q = query(usersRef, where('uid', '==', userId));
+            const searchSnapshot = await getDocs(q);
+            
+            if (!searchSnapshot.empty) {
+              const userData = searchSnapshot.docs[0].data();
+              paidUsers.push({
+                id: searchSnapshot.docs[0].id,
+                email: userData.email || userData.emailAddress || userData.userEmail || 'No email',
+                name: userData.name || userData.displayName || userData.userName || userData.fullName || 'Anonymous User'
+              });
+            } else {
+              // If still not found, add with ID only
+              paidUsers.push({
+                id: userId,
+                email: 'No email',
+                name: `User ${userId.substring(0, 8)}`
+              });
+            }
+          }
+        } catch (userError) {
+          console.error(`Error fetching user details for ${userId}:`, userError);
+          // Add user with ID only if there's an error
+          paidUsers.push({
+            id: userId,
+            email: 'No email',
+            name: `User ${userId.substring(0, 8)}`
+          });
+        }
+      }
+
+      console.log('Fetched paid users with details:', paidUsers.length, paidUsers);
       return paidUsers;
     } catch (error) {
       console.error('Error fetching paid users:', error);
