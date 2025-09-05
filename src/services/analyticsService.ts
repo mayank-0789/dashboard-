@@ -1,4 +1,4 @@
-import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 // Types for analytics data
@@ -23,19 +23,24 @@ export interface RegionData {
   percentage: number;
 }
 
+// Firebase timestamp type
+type FirebaseTimestamp = {
+  toDate(): Date;
+} | Date | string | null;
+
 export interface Transaction {
   id: string;
   customer: string;
   amount: number;
   status: 'completed' | 'pending' | 'failed';
   date: string;
-  timestamp: any;
+  timestamp: FirebaseTimestamp;
 }
 
 export interface ActivityItem {
   type: 'user' | 'payment' | 'report' | 'system';
   message: string;
-  timestamp: any;
+  timestamp: FirebaseTimestamp;
 }
 
 // Analytics service class
@@ -227,10 +232,18 @@ export class AnalyticsService {
 
 
   // Format timestamp for display
-  static formatTimestamp(timestamp: any): string {
+  static formatTimestamp(timestamp: FirebaseTimestamp): string {
     if (!timestamp) return 'Never';
     
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    let date: Date;
+    if (typeof timestamp === 'object' && timestamp !== null && 'toDate' in timestamp) {
+      date = timestamp.toDate();
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    } else {
+      date = new Date(timestamp as string);
+    }
+    
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
@@ -444,7 +457,7 @@ export class AnalyticsService {
   }
 
 
-  private static determineActivityType(data: any): ActivityItem['type'] {
+  private static determineActivityType(data: Record<string, unknown>): ActivityItem['type'] {
     if (data.type === 'user' || data.action === 'register' || data.event === 'signup') {
       return 'user';
     }
@@ -457,18 +470,18 @@ export class AnalyticsService {
     return 'system';
   }
 
-  private static generateActivityMessage(data: any, type: ActivityItem['type']): string {
+  private static generateActivityMessage(data: Record<string, unknown>, type: ActivityItem['type']): string {
     switch (type) {
       case 'user':
-        return data.message || 'New user registered';
+        return (data.message as string) || 'New user registered';
       case 'payment':
-        return data.message || 'Payment processed';
+        return (data.message as string) || 'Payment processed';
       case 'report':
-        return data.message || 'Report generated';
+        return (data.message as string) || 'Report generated';
       case 'system':
-        return data.message || 'System update';
+        return (data.message as string) || 'System update';
       default:
-        return data.message || 'Activity recorded';
+        return (data.message as string) || 'Activity recorded';
     }
   }
 }
