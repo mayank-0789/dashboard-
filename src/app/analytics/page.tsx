@@ -12,13 +12,55 @@ export default function Analytics() {
   const [allUsers, setAllUsers] = useState<UserData[]>([]);
   const [dailyActiveUsers, setDailyActiveUsers] = useState<UserData[]>([]);
   const [paidUsers, setPaidUsers] = useState<UserData[]>([]);
-  const [activeTab, setActiveTab] = useState<'total' | 'daily' | 'paid'>('total');
+  const [activeTab, setActiveTab] = useState<'total' | 'daily' | 'paid' | 'misc'>('total');
+  const [miscSubTab, setMiscSubTab] = useState<'region' | 'features'>('region');
   const [dataLoading, setDataLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(25);
   const router = useRouter();
 
-  useEffect(() => {
+  // Regional analytics data
+  const regionalData = [
+    { country: 'India', percentage: '99%' },
+    { country: 'United States of America', percentage: '<0.5%' },
+    { country: 'Nepal', percentage: '<0.5%' },
+    { country: 'Saudi Arabia', percentage: '<0.1%' },
+    { country: 'Myanmar', percentage: '<0.1%' },
+    { country: 'Pakistan', percentage: '<0.1%' },
+    { country: 'Ireland', percentage: '<0.1%' },
+    { country: 'Kenya', percentage: '<0.1%' },
+    { country: 'Netherlands', percentage: '<0.1%' },
+    { country: 'Croatia', percentage: '<0.1%' },
+    { country: 'United Arab Emirates', percentage: '<0.1%' },
+    { country: 'Bahrain', percentage: '<0.1%' },
+    { country: 'Germany', percentage: '<0.1%' },
+    { country: 'United Kingdom', percentage: '<0.1%' },
+    { country: 'Italy', percentage: '<0.1%' },
+    { country: 'Kuwait', percentage: '<0.1%' },
+    { country: 'Sweden', percentage: '<0.1%' },
+    { country: 'Singapore', percentage: '<0.1%' },
+    { country: 'Bangladesh', percentage: '<0.1%' },
+    { country: 'Brazil', percentage: '<0.1%' },
+    { country: 'Canada', percentage: '<0.1%' },
+    { country: 'Switzerland', percentage: '<0.1%' },
+    { country: 'Egypt', percentage: '<0.1%' },
+    { country: 'Spain', percentage: '<0.1%' },
+    { country: 'Nigeria', percentage: '<0.1%' },
+    { country: 'Poland', percentage: '<0.1%' },
+    { country: 'Qatar', percentage: '<0.1%' },
+    { country: 'Romania', percentage: '<0.1%' },
+    { country: 'Zimbabwe', percentage: '<0.1%' }
+  ];
+
+  // Most used features data
+  const featuresData = [
+    { feature: 'Revision Mode', icon: '📚', description: 'Study and review content' },
+    { feature: 'Viva Mode', icon: '🎤', description: 'Interactive Q&A sessions' },
+    { feature: 'Interactive Mode', icon: '🎯', description: 'Engaging learning activities' },
+    { feature: 'Practice Mode', icon: '✍️', description: 'Hands-on practice exercises' }
+  ];
+
+   useEffect(() => {
     // Check authentication status
     const authStatus = localStorage.getItem('isAuthenticated');
     const email = localStorage.getItem('userEmail');
@@ -91,9 +133,17 @@ export default function Analytics() {
     setCurrentPage(pageNumber);
   };
 
-  const handleTabChange = (tab: 'total' | 'daily' | 'paid') => {
+  const handleTabChange = (tab: 'total' | 'daily' | 'paid' | 'misc') => {
     setActiveTab(tab);
     setCurrentPage(1); // Reset to first page when switching tabs
+    // Reset misc sub-tab when switching to misc tab
+    if (tab === 'misc') {
+      setMiscSubTab('region');
+    }
+  };
+
+  const handleMiscSubTabChange = (subTab: 'region' | 'features') => {
+    setMiscSubTab(subTab);
   };
 
   const handleLogout = () => {
@@ -272,25 +322,132 @@ export default function Analytics() {
               >
                 Paid Users 
               </button>
+              <button
+                onClick={() => handleTabChange('misc')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === 'misc'
+                    ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                Miscellaneous Analytics
+              </button>
             </div>
           </div>
+
+          {/* DAU Performance Note */}
+          {activeTab === 'daily' && (
+            <div className="px-6 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+              <div className="flex items-start space-x-2">
+                <svg className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    Performance Note
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                    We are displaying only a fraction of the daily active users to optimize loading time. 
+                    The stats card shows the complete count, but this list shows a sample for performance reasons.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           
-          {/* Users List */}
+          {/* Content Area */}
           <div className="overflow-x-auto">
-            {dataLoading ? (
-              <div className="p-8 text-center">
-                <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-slate-600 dark:text-slate-400">Loading users...</p>
+            {activeTab === 'misc' ? (
+              // Miscellaneous Analytics with Sub-tabs
+              <div>
+                {/* Sub-tab Navigation */}
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() => handleMiscSubTabChange('region')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        miscSubTab === 'region'
+                          ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      Users by Region
+                    </button>
+                    <button
+                      onClick={() => handleMiscSubTabChange('features')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        miscSubTab === 'features'
+                          ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      Most Used Features
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sub-tab Content */}
+                <div className="p-6">
+                  {miscSubTab === 'region' ? (
+                    // Users by Region
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Users by Region</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {regionalData.map((region, index) => (
+                          <div key={index} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-6 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-sm flex-shrink-0"></div>
+                              <div>
+                                <h4 className="font-medium text-slate-900 dark:text-white text-sm">{region.country}</h4>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-lg font-bold text-slate-900 dark:text-white">{region.percentage}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    // Most Used Features
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Most Used Features</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {featuresData.map((feature, index) => (
+                          <div key={index} className="p-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-800/50 rounded-xl hover:shadow-lg transition-all duration-300 border border-slate-200 dark:border-slate-600">
+                            <div className="flex items-start space-x-4">
+                              <div className="text-3xl">{feature.icon}</div>
+                              <div className="flex-1">
+                                <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                                  {index + 1}. {feature.feature}
+                                </h4>
+                                <p className="text-sm text-slate-600 dark:text-slate-400">{feature.description}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
-              <table className="w-full">
-                <thead className="bg-slate-50 dark:bg-slate-700/50">
-                  <tr>
-                    <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-400">User</th>
-                    <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-400">Email</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              // Users List for other tabs
+              <>
+                {dataLoading ? (
+                  <div className="p-8 text-center">
+                    <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-slate-600 dark:text-slate-400">Loading users...</p>
+                  </div>
+                ) : (
+                  <table className="w-full">
+                    <thead className="bg-slate-50 dark:bg-slate-700/50">
+                      <tr>
+                        <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-400">User</th>
+                        <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-400">Email</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {getCurrentUsers().length === 0 ? (
                     <tr>
                       <td colSpan={2} className="py-8 px-6 text-center text-slate-500 dark:text-slate-400">
@@ -320,13 +477,15 @@ export default function Analytics() {
                       </tr>
                     ))
                   )}
-                </tbody>
-              </table>
+                    </tbody>
+                  </table>
+                )}
+              </>
             )}
           </div>
           
           {/* Pagination */}
-          {!dataLoading && (activeTab === 'total' ? allUsers : activeTab === 'daily' ? dailyActiveUsers : paidUsers).length > 0 && (
+          {!dataLoading && activeTab !== 'misc' && (activeTab === 'total' ? allUsers : activeTab === 'daily' ? dailyActiveUsers : paidUsers).length > 0 && (
             <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-slate-600 dark:text-slate-400">
