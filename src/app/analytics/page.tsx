@@ -19,45 +19,26 @@ export default function Analytics() {
   const [usersPerPage] = useState(25);
   const router = useRouter();
 
-  // Regional analytics data
+  // Regional analytics data (showing top 10 for better chart visualization)
   const regionalData = [
-    { country: 'India', percentage: '99%' },
-    { country: 'United States of America', percentage: '<0.5%' },
-    { country: 'Nepal', percentage: '<0.5%' },
-    { country: 'Saudi Arabia', percentage: '<0.1%' },
-    { country: 'Myanmar', percentage: '<0.1%' },
-    { country: 'Pakistan', percentage: '<0.1%' },
-    { country: 'Ireland', percentage: '<0.1%' },
-    { country: 'Kenya', percentage: '<0.1%' },
-    { country: 'Netherlands', percentage: '<0.1%' },
-    { country: 'Croatia', percentage: '<0.1%' },
-    { country: 'United Arab Emirates', percentage: '<0.1%' },
-    { country: 'Bahrain', percentage: '<0.1%' },
-    { country: 'Germany', percentage: '<0.1%' },
-    { country: 'United Kingdom', percentage: '<0.1%' },
-    { country: 'Italy', percentage: '<0.1%' },
-    { country: 'Kuwait', percentage: '<0.1%' },
-    { country: 'Sweden', percentage: '<0.1%' },
-    { country: 'Singapore', percentage: '<0.1%' },
-    { country: 'Bangladesh', percentage: '<0.1%' },
-    { country: 'Brazil', percentage: '<0.1%' },
-    { country: 'Canada', percentage: '<0.1%' },
-    { country: 'Switzerland', percentage: '<0.1%' },
-    { country: 'Egypt', percentage: '<0.1%' },
-    { country: 'Spain', percentage: '<0.1%' },
-    { country: 'Nigeria', percentage: '<0.1%' },
-    { country: 'Poland', percentage: '<0.1%' },
-    { country: 'Qatar', percentage: '<0.1%' },
-    { country: 'Romania', percentage: '<0.1%' },
-    { country: 'Zimbabwe', percentage: '<0.1%' }
+    { country: 'India', percentage: '99%', value: 99, color: 'bg-blue-500' },
+    { country: 'USA', percentage: '<0.5%', value: 0.4, color: 'bg-green-500' },
+    { country: 'Nepal', percentage: '<0.5%', value: 0.3, color: 'bg-purple-500' },
+    { country: 'Saudi Arabia', percentage: '<0.1%', value: 0.08, color: 'bg-orange-500' },
+    { country: 'Myanmar', percentage: '<0.1%', value: 0.07, color: 'bg-pink-500' },
+    { country: 'Pakistan', percentage: '<0.1%', value: 0.06, color: 'bg-indigo-500' },
+    { country: 'Ireland', percentage: '<0.1%', value: 0.05, color: 'bg-teal-500' },
+    { country: 'Kenya', percentage: '<0.1%', value: 0.04, color: 'bg-cyan-500' },
+    { country: 'Netherlands', percentage: '<0.1%', value: 0.04, color: 'bg-rose-500' },
+    { country: 'Others', percentage: '<0.1%', value: 0.02, color: 'bg-slate-400' }
   ];
 
   // Most used features data
   const featuresData = [
-    { feature: 'Revision Mode', icon: '📚', description: 'Study and review content' },
-    { feature: 'Viva Mode', icon: '🎤', description: 'Interactive Q&A sessions' },
-    { feature: 'Interactive Mode', icon: '🎯', description: 'Engaging learning activities' },
-    { feature: 'Practice Mode', icon: '✍️', description: 'Hands-on practice exercises' }
+    { feature: 'Revision Mode', icon: '📚', description: 'Study and review content', usage: 85, color: 'bg-blue-500' },
+    { feature: 'Viva Mode', icon: '🎤', description: 'Interactive Q&A sessions', usage: 72, color: 'bg-green-500' },
+    { feature: 'Interactive Mode', icon: '🎯', description: 'Engaging learning activities', usage: 68, color: 'bg-purple-500' },
+    { feature: 'Practice Mode', icon: '✍️', description: 'Hands-on practice exercises', usage: 59, color: 'bg-orange-500' }
   ];
 
    useEffect(() => {
@@ -392,37 +373,137 @@ export default function Analytics() {
                     // Users by Region
                     <div>
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Users by Region</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {regionalData.map((region, index) => (
-                          <div key={index} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-6 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-sm flex-shrink-0"></div>
-                              <div>
-                                <h4 className="font-medium text-slate-900 dark:text-white text-sm">{region.country}</h4>
-                              </div>
+                      
+                      {/* Bar Chart */}
+                      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 mb-6">
+                        <div className="relative">
+                          {/* Y-axis label */}
+                          <div className="absolute -left-8 top-1/2 transform -rotate-90 text-sm font-medium text-slate-600 dark:text-slate-400">
+                            Percentage (%)
+                          </div>
+                          
+                          {/* Chart area */}
+                          <div className="ml-4">
+                            {/* Y-axis */}
+                            <div className="flex h-80 items-end space-x-2 border-l-2 border-b-2 border-slate-300 dark:border-slate-600 pl-4 pb-4">
+                              {regionalData.map((region, index) => (
+                                <div key={index} className="flex-1 flex flex-col items-center">
+                                  {/* Bar */}
+                                  <div className="relative w-full max-w-12">
+                                    <div 
+                                      className={`${region.color} rounded-t-md transition-all duration-1000 ease-out hover:opacity-80`}
+                                      style={{ 
+                                        height: region.country === 'India' ? '280px' : `${Math.max(region.value * 10, 8)}px`,
+                                        animationDelay: `${index * 100}ms`
+                                      }}
+                                    ></div>
+                                    {/* Value label on top of bar */}
+                                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                      {region.percentage}
+                                    </div>
+                                  </div>
+                                  {/* X-axis label */}
+                                  <div className="mt-2 text-xs text-slate-600 dark:text-slate-400 transform -rotate-45 origin-left whitespace-nowrap">
+                                    {region.country}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            <div>
-                              <p className="text-lg font-bold text-slate-900 dark:text-white">{region.percentage}</p>
+                            
+                            {/* X-axis label */}
+                            <div className="text-center mt-8 text-sm font-medium text-slate-600 dark:text-slate-400">
+                              Countries
                             </div>
                           </div>
-                        ))}
+                        </div>
+                      </div>
+                      
+                      {/* Summary stats */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg text-center">
+                          <div className="text-2xl font-bold text-slate-900 dark:text-white">30+</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">Total Countries</div>
+                        </div>
+                        <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg text-center">
+                          <div className="text-2xl font-bold text-slate-900 dark:text-white">99%</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">India Dominance</div>
+                        </div>
+                        <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg text-center">
+                          <div className="text-2xl font-bold text-slate-900 dark:text-white">5</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">Continents</div>
+                        </div>
                       </div>
                     </div>
                   ) : (
                     // Most Used Features
                     <div>
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Most Used Features</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Bar Chart */}
+                      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 mb-6">
+                        <div className="relative">
+                          {/* Y-axis label */}
+                          <div className="absolute -left-8 top-1/2 transform -rotate-90 text-sm font-medium text-slate-600 dark:text-slate-400">
+                            Usage Rate (%)
+                          </div>
+                          
+                          {/* Chart area */}
+                          <div className="ml-4">
+                            {/* Y-axis */}
+                            <div className="flex h-80 items-end space-x-8 border-l-2 border-b-2 border-slate-300 dark:border-slate-600 pl-4 pb-4">
+                              {featuresData.map((feature, index) => (
+                                <div key={index} className="flex-1 flex flex-col items-center max-w-20">
+                                  {/* Bar */}
+                                  <div className="relative w-full">
+                                    <div 
+                                      className={`${feature.color} rounded-t-md transition-all duration-1000 ease-out hover:opacity-80 w-full`}
+                                      style={{ 
+                                        height: `${(feature.usage / 100) * 280}px`,
+                                        animationDelay: `${index * 150}ms`
+                                      }}
+                                    ></div>
+                                    {/* Value label on top of bar */}
+                                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                      {feature.usage}%
+                                    </div>
+                                  </div>
+                                  {/* Icon and label */}
+                                  <div className="mt-3 text-center">
+                                    <div className="text-2xl mb-1">{feature.icon}</div>
+                                    <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                      {feature.feature}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* X-axis label */}
+                            <div className="text-center mt-8 text-sm font-medium text-slate-600 dark:text-slate-400">
+                              Features
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Feature details */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {featuresData.map((feature, index) => (
-                          <div key={index} className="p-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-800/50 rounded-xl hover:shadow-lg transition-all duration-300 border border-slate-200 dark:border-slate-600">
-                            <div className="flex items-start space-x-4">
-                              <div className="text-3xl">{feature.icon}</div>
-                              <div className="flex-1">
-                                <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                                  {index + 1}. {feature.feature}
-                                </h4>
-                                <p className="text-sm text-slate-600 dark:text-slate-400">{feature.description}</p>
-                              </div>
+                          <div key={index} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <div className="text-xl">{feature.icon}</div>
+                              <div className={`w-3 h-3 ${feature.color} rounded-full`}></div>
+                              <h4 className="font-semibold text-slate-900 dark:text-white text-sm">
+                                {index + 1}. {feature.feature}
+                              </h4>
+                            </div>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 ml-8">
+                              {feature.description}
+                            </p>
+                            <div className="mt-2 ml-8">
+                              <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                {feature.usage}% usage rate
+                              </span>
                             </div>
                           </div>
                         ))}
